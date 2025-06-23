@@ -36,7 +36,7 @@ You can run this app as a container using Podman (or Docker). Example for Podman
 # Pull the latest image from GitHub Container Registry
 podman pull ghcr.io/r-nab/sourcecodebackup:latest
 
-# Run the container, mapping port 8003 and mounting local repos/clones directories
+# Run the container, mapping port 8003 and mounting local repos/clones/configs directories
 podman run -d \
   --name sourcecodebackup \
   -p 8003:8003 \
@@ -46,6 +46,7 @@ podman run -d \
   -e TZ=Asia/Kolkata \
   -v "$(pwd)/repos:/app/repos" \
   -v "$(pwd)/clones:/app/clones" \
+  -v "$(pwd)/configs:/app/configs" \
   ghcr.io/r-nab/sourcecodebackup:latest
 ```
 
@@ -56,9 +57,9 @@ The application will be available at http://localhost:8003
 - Web interface for managing repository mirrors
 - Automatic repository mirroring every 12 hours (or custom cron)
 - Download repositories as zip files
-- Configuration stored in `config.yaml`
+- Configuration stored in `configs/config.yaml`
 - Mirrored repositories stored in `repos` directory
 
 ## Configuration
 
-The application stores its configuration in `config.yaml`. This file is automatically created when the application starts. You don't need to modify it manually as all operations can be performed through the web interface.
+The application stores its configuration in `configs/config.yaml`. This file is automatically created when the application starts. You don't need to modify it manually as all operations can be performed through the web interface. To persist configuration across container restarts, make sure to mount a local `configs` directory as shown above.
