@@ -6,7 +6,7 @@ A FastAPI-based web application that manages GitHub repository mirrors. It allow
 - Download repositories as zip files
 - Remove repositories from the mirror list
 
-## Setup
+## Setup (Python)
 
 1. Create a virtual environment and activate it:
 ```bash
@@ -19,7 +19,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Running the Application
+## Running the Application (Python)
 
 Run the application using:
 ```bash
@@ -28,10 +28,33 @@ python main.py
 
 The application will be available at http://localhost:8000
 
+## Running as a Container (Podman)
+
+You can run this app as a container using Podman (or Docker). Example for Podman:
+
+```bash
+# Pull the latest image from GitHub Container Registry
+podman pull ghcr.io/r-nab/sourcecodebackup:latest
+
+# Run the container, mapping port 8003 and mounting local repos/clones directories
+podman run -d \
+  --name sourcecodebackup \
+  -p 8003:8003 \
+  -e PUID=$(id -u) \
+  -e PGID=$(id -g) \
+  -e UMASK=022 \
+  -e TZ=Asia/Kolkata \
+  -v "$(pwd)/repos:/app/repos" \
+  -v "$(pwd)/clones:/app/clones" \
+  ghcr.io/r-nab/sourcecodebackup:latest
+```
+
+The application will be available at http://localhost:8003
+
 ## Features
 
 - Web interface for managing repository mirrors
-- Automatic repository mirroring every 12 hours
+- Automatic repository mirroring every 12 hours (or custom cron)
 - Download repositories as zip files
 - Configuration stored in `config.yaml`
 - Mirrored repositories stored in `repos` directory
