@@ -15,7 +15,7 @@ import time
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-CONFIG_FILE = "config.yaml"
+CONFIG_FILE = "configs/config.yaml"
 REPOS_DIR = "repos"
 
 def load_config():
@@ -57,6 +57,7 @@ scheduler.start()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     os.makedirs(REPOS_DIR, exist_ok=True)
+    os.makedirs("configs", exist_ok=True)
     if not os.path.exists(CONFIG_FILE):
         save_config({'repositories': [], 'cron': ''})
     config = load_config()

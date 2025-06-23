@@ -36,7 +36,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create mount points for volumes
-VOLUME ["/app/repos", "/app/clones"]
+VOLUME ["/app/repos", "/app/clones", "/app/configs"]
 
 # Expose web UI port
 EXPOSE 8003
