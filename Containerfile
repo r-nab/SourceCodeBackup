@@ -44,9 +44,14 @@ EXPOSE 8003
 # Run the app with correct user and group
 CMD ["sh", "-c", "\
     if [ -n \"$PUID\" ] && [ -n \"$PGID\" ]; then \
-        addgroup --gid $PGID appgroup && adduser --disabled-password --gecos '' --uid $PUID --gid $PGID appuser; \
+        if ! getent group $PGID >/dev/null; then addgroup --gid $PGID appgroup; fi; \
+        if ! getent passwd $PUID >/dev/null; then adduser --disabled-password --gecos '' --uid $PUID --gid $PGID appuser; fi; \
         chown -R $PUID:$PGID /app; \
-        su appuser -c 'umask $UMASK && uvicorn main:app --host 0.0.0.0 --port 8003'; \
+        if getent passwd $PUID >/dev/null; then \
+            su appuser -c 'umask $UMASK && uvicorn main:app --host 0.0.0.0 --port 8003'; \
+        else \
+            uvicorn main:app --host 0.0.0.0 --port 8003; \
+        fi; \
     else \
         uvicorn main:app --host 0.0.0.0 --port 8003; \
     fi"]
