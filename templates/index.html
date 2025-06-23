@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Source Code Backup</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+    <style>
+        body {
+            background: #c4c4c4 !important;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        form, section.repo-list {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 1.5em auto;
+            background: #f7f7f7;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(60, 60, 60, 0.10);
+            padding: 1.2em 1.5em;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2d2d2d;
+        }
+        button, .btn-download {
+            font-size: 0.85em !important;
+            padding: 0.3em 0.9em !important;
+            border-radius: 4px;
+            background: #5a7d7c;
+            color: #fff;
+            border: none;
+            margin-top: 0.5em;
+            transition: background 0.2s;
+        }
+        button:hover, .btn-download:hover {
+            background: #3e5756;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1em;
+            background: #e0e0e0;
+            border-radius: 6px;
+            padding: 1em;
+            box-shadow: 0 1px 4px rgba(60,60,60,0.07);
+        }
+        li:nth-child(even) {
+            background: #d1d1d1;
+        }
+        small, i {
+            color: #5a7d7c;
+        }
+        label {
+            color: #2d2d2d;
+        }
+        input[type="text"] {
+            background: #eaeaea;
+            color: #222;
+            border: 1px solid #a0a0a0;
+            border-radius: 4px;
+            font-size: 1em;
+            margin-bottom: 0.5em;
+        }
+        @media (max-width: 600px) {
+            form, section.repo-list {
+                max-width: 98vw;
+                padding: 1em 0.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Source Code Backup</h1>
+        <form id="cronForm" onsubmit="return setCron(event)">
+            <label for="cron">Mirror Update Cron Schedule:</label>
+            <input type="text" id="cron" name="cron" placeholder="e.g. */12 * * * *" required style="max-width: 300px;">
+            <button type="submit">Set Schedule</button>
+            <div style="margin-top: 8px; color: #5a7d7c; font-size: 14px; text-align:center;">
+                Current schedule: <b>{{ cron if cron else 'Not set (default: every 12 hours)' }}</b>
+            </div>
+        </form>
+        <form id="addRepoForm" onsubmit="return addRepo(event)">
+            <input type="text" id="repoUrl" placeholder="Enter GitHub repository URL" required style="max-width: 400px;">
+            <button type="submit">Add Repository</button>
+        </form>
+        <section class="repo-list">
+            <h2>Mirrored Repositories</h2>
+            <ul>
+            {% for repo in repos %}
+                <li>
+                    <span><b>{{ repo.split('/')[-1].replace('.git', '') }}</b> <small><i>{{ repo }}</i></small></span>
+                    <button class="btn-download" onclick="downloadRepo('{{ repo.split('/')[-1].replace('.git', '') }}')">Download</button>
+                </li>
+            {% endfor %}
+            </ul>
+        </section>
+    </main>
+    <script>
+        async function setCron(event) {
+            event.preventDefault();
+            const cron = document.getElementById('cron').value;
+            const response = await fetch('/set_cron', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `cron=${encodeURIComponent(cron)}`
+            });
+            if (response.ok) {
+                window.location.reload();
+            }
+        }
+        async function addRepo(event) {
+            event.preventDefault();
+            const repoUrl = document.getElementById('repoUrl').value;
+            const response = await fetch('/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `repo_url=${encodeURIComponent(repoUrl)}`
+            });
+            if (response.ok) {
+                window.location.reload();
+            }
+        }
+        function downloadRepo(repoName) {
+            window.location.href = `/download/${repoName}`;
+        }
+    </script>
+</body>
+</html>
