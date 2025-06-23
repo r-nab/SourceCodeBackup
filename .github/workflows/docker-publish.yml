@@ -31,5 +31,5 @@ jobs:
           context: .
           file: ./Containerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/${{ github.repository_owner }}/sourcecodebackup:latest
           platforms: linux/amd64,linux/arm64
