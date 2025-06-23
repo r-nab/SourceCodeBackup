@@ -39,7 +39,7 @@ def update_mirrors():
                 git.Repo.clone_from(repo_url, repo_path, mirror=True)
             else:
                 repo = git.Repo(repo_path)
-                repo.remotes.origin.fetch()
+                repo.remotes.origin.fetch(prune=True)
         except Exception as e:
             print(f"Error updating {repo_url}: {str(e)}")
         time.sleep(40)  # 40 seconds delay between each repo
