@@ -52,10 +52,10 @@ def log_background_task_error(task):
     try:
         exception = task.exception()
     except Exception as e:
-        print(f"Background mirror task failed: {str(e)}")
+        print(f"Failed to retrieve background mirror task exception: {str(e)}")
         return
     if exception:
-        print(f"Background mirror task failed: {str(exception)}")
+        print(f"Background mirror task failed with exception: {str(exception)}")
 
 async def start_background_mirror(repo_url):
     task = asyncio.get_running_loop().create_task(
