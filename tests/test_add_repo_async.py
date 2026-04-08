@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 import sys
 import types
 
@@ -70,19 +70,19 @@ class AddRepoAsyncTests(unittest.IsolatedAsyncioTestCase):
         repo_url = "https://github.com/example/project.git"
         config = {"repositories": []}
 
-        with patch.object(main, "load_config", return_value=config), patch.object(main, "save_config") as save_config, patch.object(main, "start_background_mirror") as background_mirror:
+        with patch.object(main, "load_config", return_value=config), patch.object(main, "save_config") as save_config, patch.object(main, "start_background_mirror", new_callable=AsyncMock) as background_mirror:
             response = await main.add_repo(repo_url=repo_url)
 
         self.assertEqual(response, {"status": "success"})
         self.assertIn(repo_url, config["repositories"])
         save_config.assert_called_once_with(config)
-        background_mirror.assert_called_once_with(repo_url)
+        background_mirror.assert_awaited_once_with(repo_url)
 
     async def test_add_repo_does_not_schedule_for_existing_repo(self):
         repo_url = "https://github.com/example/project.git"
         config = {"repositories": [repo_url]}
 
-        with patch.object(main, "load_config", return_value=config), patch.object(main, "save_config") as save_config, patch.object(main, "start_background_mirror") as background_mirror:
+        with patch.object(main, "load_config", return_value=config), patch.object(main, "save_config") as save_config, patch.object(main, "start_background_mirror", new_callable=AsyncMock) as background_mirror:
             response = await main.add_repo(repo_url=repo_url)
 
         self.assertEqual(response, {"status": "success"})
