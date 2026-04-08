@@ -11,6 +11,7 @@ from datetime import datetime
 import tempfile
 from contextlib import asynccontextmanager
 import time
+import asyncio
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -43,6 +44,21 @@ def update_mirrors():
         except Exception as e:
             print(f"Error updating {repo_url}: {str(e)}")
         time.sleep(40)  # 40 seconds delay between each repo
+
+def mirror_single_repo(repo_url):
+    repo_name = repo_url.split('/')[-1].replace('.git', '')
+    repo_path = os.path.join(REPOS_DIR, repo_name)
+    try:
+        if not os.path.exists(repo_path):
+            git.Repo.clone_from(repo_url, repo_path, mirror=True)
+        else:
+            repo = git.Repo(repo_path)
+            repo.remotes.origin.fetch(prune=True)
+    except Exception as e:
+        print(f"Error updating {repo_url}: {str(e)}")
+
+def start_background_mirror(repo_url):
+    asyncio.create_task(asyncio.to_thread(mirror_single_repo, repo_url))
 
 # Initialize scheduler
 scheduler = BackgroundScheduler()
@@ -94,11 +110,7 @@ async def add_repo(repo_url: str = Form(...)):
     if repo_url not in config['repositories']:
         config['repositories'].append(repo_url)
         save_config(config)
-        # Trigger immediate mirror
-        repo_name = repo_url.split('/')[-1].replace('.git', '')
-        repo_path = os.path.join(REPOS_DIR, repo_name)
-        if not os.path.exists(repo_path):
-            git.Repo.clone_from(repo_url, repo_path, mirror=True)
+        start_background_mirror(repo_url)
     
     return {"status": "success"}
 
