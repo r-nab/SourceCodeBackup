@@ -48,10 +48,20 @@ def mirror_single_repo(repo_url):
     except Exception as e:
         print(f"Error updating {repo_url}: {str(e)}")
 
+def log_background_task_error(task):
+    try:
+        exception = task.exception()
+    except Exception as e:
+        print(f"Background mirror task failed: {str(e)}")
+        return
+    if exception:
+        print(f"Background mirror task failed: {str(exception)}")
+
 async def start_background_mirror(repo_url):
-    asyncio.get_running_loop().create_task(
+    task = asyncio.get_running_loop().create_task(
         asyncio.to_thread(mirror_single_repo, repo_url)
     )
+    task.add_done_callback(log_background_task_error)
 
 # Initialize scheduler
 scheduler = BackgroundScheduler()
